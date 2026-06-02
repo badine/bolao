@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>Bolão da Copa 2026</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        h1 { color: green; }
+        .jogo { margin: 10px 0; }
+        input { width: 40px; text-align: center; }
+        button { margin-top: 20px; padding: 10px; }
+    </style>
+</head>
+<body>
+    <h1>Bolão da Copa 2026</h1>
+    <form id="formBolao">
+        <label>Nome: <input type="text" id="nome" required></label><br><br>
+
+        <div class="jogo">Brasil <input type="number" id="brasil1"> x <input type="number" id="marrocos1"> Marrocos</div>
+        <div class="jogo">Escócia <input type="number" id="escocia1"> x <input type="number" id="haiti1"> Haiti</div>
+        <div class="jogo">França <input type="number" id="franca1"> x <input type="number" id="japao1"> Japão</div>
+        <div class="jogo">Argentina <input type="number" id="argentina1"> x <input type="number" id="ucrania1"> Ucrânia</div>
+        <div class="jogo">Alemanha <input type="number" id="alemanha1"> x <input type="number" id="chile1"> Chile</div>
+        <div class="jogo">Portugal <input type="number" id="portugal1"> x <input type="number" id="costaRica1"> Costa Rica</div>
+
+        <button type="button" onclick="salvarCSV()">Salvar em Excel</button>
+    </form>
+
+    <script>
+        // Resultados reais simulados
+        const resultados = {
+            "Brasil x Marrocos": [2,0],
+            "Escócia x Haiti": [1,1],
+            "França x Japão": [3,1],
+            "Argentina x Ucrânia": [2,0],
+            "Alemanha x Chile": [2,2],
+            "Portugal x Costa Rica": [1,0]
+        };
+
+        let ranking = [];
+
+        function salvarCSV() {
+            const nome = document.getElementById("nome").value;
+            if (!nome) {
+                alert("Digite seu nome!");
+                return;
+            }
+
+            const jogos = [
+                {time1:"Brasil", id1:"brasil1", time2:"Marrocos", id2:"marrocos1"},
+                {time1:"Escócia", id1:"escocia1", time2:"Haiti", id2:"haiti1"},
+                {time1:"França", id1:"franca1", time2:"Japão", id2:"japao1"},
+                {time1:"Argentina", id1:"argentina1", time2:"Ucrânia", id2:"ucrania1"},
+                {time1:"Alemanha", id1:"alemanha1", time2:"Chile", id2:"chile1"},
+                {time1:"Portugal", id1:"portugal1", time2:"Costa Rica", id2:"costaRica1"}
+            ];
+
+            let pontosTotais = 0;
+
+            jogos.forEach(jogo => {
+                const placar1 = parseInt(document.getElementById(jogo.id1).value || 0);
+                const placar2 = parseInt(document.getElementById(jogo.id2).value || 0);
+
+                let vencedor = "Empate";
+                if (placar1 > placar2) vencedor = jogo.time1;
+                else if (placar2 > placar1) vencedor = jogo.time2;
+
+                // Calcular pontos
+                const chave = jogo.time1 + " x " + jogo.time2;
+                const resultadoReal = resultados[chave];
+                let pontos = 0;
+                if (placar1 === resultadoReal[0] && placar2 === resultadoReal[1]) {
+                    pontos = 3; // placar exato
+                } else if (
+                    (placar1 > placar2 && resultadoReal[0] > resultadoReal[1]) ||
+                    (placar2 > placar1 && resultadoReal[1] > resultadoReal[0]) ||
+                    (placar1 === placar2 && resultadoReal[0] === resultadoReal[1])
+                ) {
+                    pontos = 1; // acertou vencedor ou empate
+                }
+
+                pontosTotais += pontos;
+
+                ranking.push([
+                    nome,
+                    chave,
+                    placar1 + " x " + placar2,
+                    vencedor,
+                    pontos
+                ]);
+            });
+
+            // Cabeçalho + dados acumulados
+            const dados = [["Nome", "Jogo", "Placar", "Ganhador", "Pontos"], ...ranking, ["TOTAL","","","",pontosTotais]];
+
+            let csvContent = "data:text/csv;charset=utf-8,"
+                + dados.map(e => e.join(",")).join("\n");
+
+            const encodedUri = encodeURI(csvContent);
+            const link = document.createElement("a");
+            link.setAttribute("href", encodedUri);
+            link.setAttribute("download", "palpites_bolao.csv");
+            document.body.appendChild(link);
+
+            link.click();
+        }
+    </script>
+</body>
+</html>
